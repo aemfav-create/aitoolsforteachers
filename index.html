@@ -4,12 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Annuaire d’outils IA pour enseignants</title>
-  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- React + ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <!-- Babel -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="bg-white text-slate-900">
@@ -28,8 +25,9 @@
       { key:"lessonplans",   label:"Plan de cours" },
     ];
 
-    // 20 outils (mix référence + nouveautés bêta)
+    // Base d'outils (20 d'origine + 5 images ajoutées)
     const STARTER = [
+      // --------- Général / Plans / Exercices / Éval ----------
       { id:"chatgpt", name:"ChatGPT", url:"https://chat.openai.com/",
         logo:"https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg",
         categories:["general","lessonplans","exercises","assessments"],
@@ -55,6 +53,7 @@
         features:["Plans détaillés","Pas à pas clairs","Réécriture/clarification de consignes"],
         limits:["Compte requis","FR très bon mais perfectible"]},
 
+      // -------------------- Images --------------------
       { id:"canva", name:"Canva – Magic Design", url:"https://www.canva.com/",
         logo:"https://static.canva.com/static/images/apple-touch-icon.png",
         categories:["images","lessonplans","exercises"],
@@ -74,6 +73,39 @@
         features:["Illustrations thématiques","Variations/styles","Export rapide"],
         limits:["Interprétation parfois floue","Vérifier droits d’image"]},
 
+      /* *** NOUVEAUX OUTILS IMAGES *** */
+      { id:"midjourney", name:"Midjourney", url:"https://www.midjourney.com/",
+        logo:"https://www.midjourney.com/apple-touch-icon.png",
+        categories:["images"],
+        summary:"Générateur d’images haut de gamme (via Discord). Idéal pour affiches, couvertures, illustrations pro.",
+        features:["Qualité artistique élevée","Compréhension fine des prompts","Styles variés"],
+        limits:["Nécessite Discord","Gratuit très limité"]},
+      { id:"leonardo", name:"Leonardo.ai", url:"https://leonardo.ai/",
+        logo:"https://leonardo.ai/favicon.ico",
+        categories:["images"],
+        summary:"Interface accessible, modèles prêts à l’emploi (personnages, stickers, assets pédagogiques).",
+        features:["Modèles variés","Éditeur convivial","Exports PNG/JPG"],
+        limits:["Crédits gratuits limités","Compte requis"]},
+      { id:"imagenlabs", name:"Google Imagen (Labs)", url:"https://labs.google/",
+        logo:"https://www.google.com/favicon.ico",
+        categories:["images"], beta:true,
+        summary:"Générateur d’images de Google (accès Labs). Très bon réalisme et cohérence.",
+        features:["Qualité élevée","Styles précis","Intégration écosystème Google (progressive)"],
+        limits:["Accès souvent restreint (BÊTA)","Compte Google requis"]},
+      { id:"playgroundai", name:"Playground.ai", url:"https://playgroundai.com/",
+        logo:"https://playgroundai.com/favicon.ico",
+        categories:["images"],
+        summary:"Génération et retouches simples. Idéal pour créer des images rapides pour des fiches.",
+        features:["Interface simple","Retouches intégrées","Plan gratuit généreux"],
+        limits:["Moins puissant que Midjourney/Leonardo","Qualité variable selon prompts"]},
+      { id:"ideogram", name:"Ideogram.ai", url:"https://ideogram.ai/",
+        logo:"https://ideogram.ai/favicon.ico",
+        categories:["images"], beta:true,
+        summary:"Spécialiste du texte dans l’image (affiches, panneaux, infographies).",
+        features:["Texte net dans l’image","Templates d’affiches","Partage facile"],
+        limits:["Encore en BÊTA","Résultats inégaux selon langues"]},
+
+      // -------------------- Quiz --------------------
       { id:"quizizz", name:"Quizizz AI", url:"https://quizizz.com/",
         logo:"https://quizizz.com/favicon.ico",
         categories:["quiz","assessments","exercises"],
@@ -99,6 +131,7 @@
         features:["Quiz multi-formats (Forms, PDF)","Import de texte","Niveaux de difficulté"],
         limits:["Anglais prioritaire","Fonctions en évolution (BÊTA)"]},
 
+      // -------------------- Exercices --------------------
       { id:"diffit", name:"Diffit", url:"https://www.diffit.me/",
         logo:"https://www.diffit.me/favicon.ico",
         categories:["exercises","lessonplans","assessments"],
@@ -130,6 +163,7 @@
         features:["Extraction auto de questions","Suivi des réponses","Devoirs autocorrigés"],
         limits:["Compte + politique données à vérifier","Fonctions IA en bêta"]},
 
+      // -------------------- Évaluations --------------------
       { id:"gradescope", name:"Gradescope (AI-assisted)", url:"https://www.gradescope.com/",
         logo:"https://www.gradescope.com/favicon.ico",
         categories:["assessments"],
@@ -149,6 +183,7 @@
         features:["Indicateurs d’interaction orale","Suivi de pratiques"],
         limits:["Anglais privilégié","Confidentialité à vérifier"]},
 
+      // -------------------- Plans de cours --------------------
       { id:"magicschool", name:"MagicSchool.ai", url:"https://www.magicschool.ai/",
         logo:"https://www.magicschool.ai/favicon.ico",
         categories:["lessonplans","exercises","assessments","quiz"],
@@ -164,8 +199,8 @@
     ];
 
     // Stockage local
-    const STORAGE_MAIN = "iatools-v4";
-    const STORAGE_QUEUE = "iatools-v4-queue";
+    const STORAGE_MAIN = "iatools-v5";
+    const STORAGE_QUEUE = "iatools-v5-queue";
 
     // Utils
     const norm = s => (s || "").toString().trim().toLowerCase();
@@ -183,42 +218,29 @@
         {children}
       </button>
     );
-<script type="text/babel">
-  // ...
-  const getLogo = (t) => {
-    if (t.logo) return t.logo;
-    try {
-      const u = new URL(t.url);
-      return `${u.protocol}//${u.hostname}/favicon.ico`;
-    } catch {
-      return null;
-    }
-  };
-</script>
+
+    // Favicon/placeholder si logo manquant
+    const getLogo = (t) => {
+      if (t.logo) return t.logo;
+      try {
+        const u = new URL(t.url);
+        return `${u.protocol}//${u.hostname}/favicon.ico`;
+      } catch { return null; }
+    };
 
     function ToolCard({ t }) {
+      const src = getLogo(t);
       return (
         <div className="rounded-2xl border p-4 hover:shadow-sm transition">
           <div className="flex items-center gap-3">
-            {t.logo && const src = getLogo(t);
-<div className="flex items-center gap-3">
-  {src ? (
-    <img
-      src={src}
-      alt=""
-      className="h-10 w-10 rounded-lg object-cover border"
-      onError={(e)=>{ e.currentTarget.style.display='none'; e.currentTarget.nextSibling.style.display='flex'; }}
-    />
-  ) : null}
-  <div
-    style={{display: src ? 'none' : 'flex'}}
-    className="h-10 w-10 items-center justify-center rounded-lg border bg-gray-50 text-xs font-semibold"
-  >
-    {(t.name || '?').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()}
-  </div>
-  {/* ... le reste de l’en-tête (nom + résumé) */}
-</div>
-}
+            {src ? (
+              <img src={src} alt="" className="h-10 w-10 rounded-lg object-cover border"
+                   onError={(e)=>{ e.currentTarget.style.display='none'; e.currentTarget.nextSibling.style.display='flex'; }} />
+            ) : null}
+            <div style={{display: src ? 'none' : 'flex'}}
+                 className="h-10 w-10 items-center justify-center rounded-lg border bg-gray-50 text-xs font-semibold">
+              {(t.name || '?').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()}
+            </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <a href={t.url} target="_blank" rel="noreferrer"
@@ -249,6 +271,10 @@
               ))}
             </div>
           )}
+          <div className="mt-3">
+            <button className="rounded-lg border px-3 py-1 text-xs"
+                    onClick={()=>navigator.clipboard?.writeText(t.url)}>Copier le lien</button>
+          </div>
         </div>
       );
     }
@@ -266,7 +292,6 @@
       const [urlStatus, setUrlStatus] = useState(null); // null | 'ok' | 'bad' | 'unknown' | 'checking'
 
       useEffect(()=>{
-        // Check duplicates when name/url changes
         const n = norm(name);
         const u = normUrl(url);
         const isDup = existing.some(t => norm(t.name)===n || normUrl(t.url)===u);
@@ -282,13 +307,11 @@
         try {
           const res = await fetch(url, { method:'GET' , mode:'cors' });
           if (res.ok) { setUrlStatus('ok'); return; }
-          // Retry HEAD (certains serveurs refusent GET)
           const head = await fetch(url, { method:'HEAD', mode:'cors' });
           if (head.ok) { setUrlStatus('ok'); return; }
           setUrlStatus('bad');
         } catch {
-          // CORS ou blocage : on ne peut pas savoir côté navigateur
-          setUrlStatus('unknown');
+          setUrlStatus('unknown'); // CORS ou blocage
         }
       };
 
@@ -313,7 +336,6 @@
           _submittedAt: new Date().toISOString(),
         };
         onSubmit(item);
-        // reset
         setName(""); setUrl(""); setLogo(""); setSummary(""); setFeatures(""); setLimits(""); setBeta(false); setCats(["exercises"]); setUrlStatus(null); setDupMsg("");
         onClose();
       };
@@ -419,7 +441,7 @@
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-xs opacity-70">Modération locale : visible seulement sur ce navigateur. Pour une modération partagée, on branchera plus tard une petite base.</p>
+            <p className="mt-3 text-xs opacity-70">Modération locale : visible seulement sur ce navigateur. Pour une modération partagée, on branchera plus tard une base.</p>
           </div>
         </div>
       );
@@ -452,7 +474,6 @@
             || (t.features||[]).some(x=>x.toLowerCase().includes(text));
           return inCat && inText;
         });
-        // tri simple : BÊTA en dernier, puis nom
         return filtered.sort((a,b)=> (a.beta===b.beta? a.name.localeCompare(b.name) : (a.beta?1:-1)));
       }, [data, q, cat]);
 
@@ -477,7 +498,6 @@
 
       const handleSubmitToQueue = (item) => setQueue(prev=>[item, ...prev]);
       const handleApprove = (item) => {
-        // re-vérifier les doublons au moment d'approuver
         const isDup = data.some(t => norm(t.name)===norm(item.name) || normUrl(t.url)===normUrl(item.url));
         if (isDup) { alert("Doublon : cet outil existe déjà."); return; }
         setData(prev => [item, ...prev]);
@@ -536,7 +556,7 @@
 
           <footer className="my-10 text-center text-xs opacity-60">
             Version statique (GitHub Pages). Vérifiez toujours la conformité (données, droits d’image) avant usage en classe.
-            Pour modération partagée et vérification serveur : à faire plus tard via une petite base (Supabase/Firebase).
+            Pour modération partagée et vérification serveur : à prévoir plus tard (base + auth).
           </footer>
 
           <SubmissionForm
