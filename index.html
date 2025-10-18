@@ -465,31 +465,55 @@
       );
     }
     
-// 🎨 Palette de couleurs carmin par catégorie
+// Couleurs par catégorie (on garde ton carmin via "rose")
 const CAT_COLORS = {
-  general: "rose",       // carmin pour les outils généraux
-  images: "amber",       // doré pour tout ce qui est visuel/créatif
-  quiz: "red",           // rouge profond pour les quiz
-  exercises: "rose",     // carmin pour les exercices
-  assessments: "slate",  // gris bleuté pour l’évaluation
-  lessonplans: "rose",   // carmin pour les plans de cours
+  general: "rose",
+  images: "amber",
+  quiz: "red",
+  exercises: "rose",
+  assessments: "slate",
+  lessonplans: "rose",
 };
 
-// 🛠️ Générateur de classes Tailwind dynamiques selon l'état du bouton
-const pillClasses = (color, active) =>
-  active
-    ? `bg-${color}-600 text-white shadow-sm focus:ring-${color}-300`
-    : `border border-${color}-300 text-${color}-700 hover:bg-${color}-100 focus:ring-${color}-200`;
+// Classes explicites pour chaque couleur (actif / inactif)
+const COLOR_CLASSES = {
+  rose: {
+    active:   "bg-rose-600 text-white shadow-sm focus:ring-rose-300",
+    inactive: "border border-rose-300 text-rose-700 hover:bg-rose-100 focus:ring-rose-200",
+  },
+  amber: {
+    active:   "bg-amber-600 text-white shadow-sm focus:ring-amber-300",
+    inactive: "border border-amber-300 text-amber-700 hover:bg-amber-100 focus:ring-amber-200",
+  },
+  red: {
+    active:   "bg-red-700 text-white shadow-sm focus:ring-red-300",
+    inactive: "border border-red-300 text-red-700 hover:bg-red-100 focus:ring-red-200",
+  },
+  slate: {
+    active:   "bg-slate-700 text-white shadow-sm focus:ring-slate-300",
+    inactive: "border border-slate-300 text-slate-700 hover:bg-slate-100 focus:ring-slate-200",
+  },
+  gray: {
+    active:   "bg-gray-700 text-white shadow-sm focus:ring-gray-300",
+    inactive: "border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-gray-200",
+  },
+};
 
-// 📍 Nouveau composant Pill qui applique la couleur dynamique
-const Pill = ({ active, color, children, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`rounded-full px-3 py-1 text-sm transition focus:outline-none focus:ring ${pillClasses(color, active)}`}
-  >
-    {children}
-  </button>
-);
+const Pill = ({ active, color = "rose", children, onClick }) => {
+  const c = COLOR_CLASSES[color] || COLOR_CLASSES.gray;
+  return (
+    <button
+      onClick={onClick}
+      className={
+        "rounded-full px-3 py-1 text-sm transition focus:outline-none focus:ring " +
+        (active ? c.active : c.inactive)
+      }
+    >
+      {children}
+    </button>
+  );
+};
+
 
     function App() {
       const [data, setData] = useState([]);
@@ -573,12 +597,17 @@ const Pill = ({ active, color, children, onClick }) => (
           </header>
 
           <nav className="mt-4 flex flex-wrap items-center gap-2">
-            {CATS.map(c => (
-            <Pill
-  key={c.key}
-  active={cat === c.key}
-  color={CAT_COLORS[c.key] || "rose"}
-  onClick={() => setCat(c.key)}
+           {CATS.map(c => (
+  <Pill
+    key={c.key}
+    active={cat === c.key}
+    color={CAT_COLORS[c.key] || "rose"}
+    onClick={() => setCat(c.key)}
+  >
+    {c.label}
+  </Pill>
+))}
+
 >
   {c.label}
 </Pill>
