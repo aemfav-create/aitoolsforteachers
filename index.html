@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Annuaire d’outils IA pour enseignants</title>
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React + ReactDOM UMD -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- Babel pour interpréter le JSX directement dans le navigateur -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-white text-slate-900">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useMemo, useState } = React;
+
+    // --- Données de démo ---
+    const DEMO_TOOLS = [
+      { id:"chatgpt", name:"ChatGPT", url:"https://chat.openai.com/",
+        summary:"Assistant IA polyvalent pour la rédaction, la préparation de cours, la remédiation et la différenciation.",
+        subjects:["Informatique","Français","Transversal"],
+        levels:["Secondaire I","Secondaire II","Formation d'adultes"],
+        languages:["FR","EN"], pricing:"Freemium",
+        useCases:["Préparation de séquences","Création de fiches","Exercices différenciés","Corrections/commentaires"],
+        badges:["Accessible","Aide à l'écriture"], addedAt:"2025-10-01", popularity:98 },
+      { id:"magicschool", name:"MagicSchool.ai", url:"https://www.magicschool.ai/",
+        summary:"Suite d'outils IA dédiés aux enseignants (objectifs, consignes, plans, quiz, rubriques d'évaluation).",
+        subjects:["Transversal"], levels:["Primaire","Secondaire I","Secondaire II"],
+        languages:["EN","FR"], pricing:"Freemium",
+        useCases:["Génération de tâches","Évaluation","Différenciation"],
+        badges:["Pour enseignants"], addedAt:"2025-09-15", popularity:85 },
+      { id:"diffit", name:"Diffit", url:"https://www.diffit.me/",
+        summary:"Adapter des textes à différents niveaux de lecture et générer des questions de compréhension.",
+        subjects:["Français","Langues"], levels:["Primaire","Secondaire I"],
+        languages:["EN","FR"], pricing:"Freemium",
+        useCases:["Différenciation","Lecture","Compréhension"],
+        badges:["Accessibilité"], addedAt:"2025-08-02", popularity:74 },
+      { id:"quillbot", name:"QuillBot", url:"https://quillbot.com/",
+        summary:"Paraphrase, résumés, reformulations pour l'écrit.",
+        subjects:["Français","Transversal"], levels:["Secondaire II","Formation d'adultes"],
+        languages:["FR","EN"], pricing:"Freemium",
+        useCases:["Aide à l'écriture","Réécriture"],
+        badges:["Aide à l'écriture"], addedAt:"2025-07-11", popularity:63 },
+      { id:"perplexity", name:"Perplexity", url:"https://www.perplexity.ai/",
+        summary:"Moteur de réponses avec sources. Utile pour la veille disciplinaire et la préparation de cours.",
+        subjects:["Transversal"], levels:["Secondaire II","Formation d'adultes"],
+        languages:["FR","EN"], pricing:"Freemium",
+        useCases:["Recherche documentaire","Veille"],
+        badges:["Sources citées"], addedAt:"2025-09-30", popularity:81 },
+      { id:"teachfx", name:"TeachFX", url:"https://teachfx.com/",
+        summary:"Analyse de l'interaction orale en classe (temps de parole enseignant/élèves).",
+        subjects:["Transversal"], levels:["Secondaire I","Secondaire II"],
+        languages:["EN"], pricing:"Payant",
+        useCases:["Analyse de pratiques","Pédagogie active"],
+        badges:["Analytics pédagogique"], addedAt:"2025-08-20", popularity:52 },
+      { id:"canva-magic", name:"Canva – Magic Design", url:"https://www.canva.com/",
+        summary:"Génération assistée pour présentations, fiches et visuels de cours.",
+        subjects:["Transversal"], levels:["Primaire","Secondaire I","Secondaire II","Formation d'adultes"],
+        languages:["FR","EN"], pricing:"Freemium",
+        useCases:["Supports de cours","Affiches","Slides"],
+        badges:["Création visuelle"], addedAt:"2025-06-10", popularity:77 },
+      { id:"quizizz-ai", name:"Quizizz AI", url:"https://quizizz.com/",
+        summary:"Générer des quiz et exercices auto-corrigés à partir d'un texte ou d'un thème.",
+        subjects:["Transversal"], levels:["Primaire","Secondaire I","Secondaire II"],
+        languages:["FR","EN"], pricing:"Freemium",
+        useCases:["Évaluation formative","Quiz"],
+        badges:["Interaction"], addedAt:"2025-05-22", popularity:69 },
+      { id:"grammarly", name:"Grammarly", url:"https://www.grammarly.com/",
+        summary:"Correction et feedback d'écriture (principalement EN, support FR limité).",
+        subjects:["Anglais","Transversal"], levels:["Secondaire II","Formation d'adultes"],
+        languages:["EN"], pricing:"Freemium",
+        useCases:["Aide à l'écriture","Grammaire"],
+        badges:["Correction"], addedAt:"2025-04-18", popularity:64 },
+      { id:"microsoft-copilot", name:"Microsoft Copilot (365)", url:"https://www.microsoft.com/",
+        summary:"Assistant IA intégré à Word, PowerPoint, Excel pour générer des contenus pédagogiques.",
+        subjects:["Transversal"], levels:["Secondaire I","Secondaire II","Formation d'adultes"],
+        languages:["FR","EN"], pricing:"Payant",
+        useCases:["Préparation de cours","Synthèses","Tableaux d'exemples"],
+        badges:["Suite bureautique"], addedAt:"2025-07-30", popularity:70 },
+    ];
+
+    const ALL_LEVELS   = ["Maternelle","Primaire","Secondaire I","Secondaire II","Formation d'adultes"];
+    const ALL_SUBJECTS = ["Transversal","Français","Maths","Langues","Sciences","Histoire-Géo","Informatique","Arts","EPS"];
+    const ALL_LANGS    = ["FR","EN","DE","IT"];
+    const ALL_PRICING  = ["Gratuit","Freemium","Payant"];
+    const ALL_USECASES = ["Préparation de séquences","Création de fiches","Exercices différenciés","Lecture","Compréhension","Évaluation","Quiz","Aide à l'écriture","Veille","Pédagogie active","Supports de cours"];
+
+    const STORAGE_KEY = "ai-teacher-tools-v1";
+
+    const classNames = (...a) => a.filter(Boolean).join(" ");
+
+    const Badge = ({children}) => (
+      <span className="inline-block rounded-full border px-2 py-0.5 text-xs">{children}</span>
+    );
+
+    const FilterPill = ({label, active, onClick}) => (
+      <button onClick={onClick}
+        className={classNames("rounded-full border px-3 py-1 text-sm", active ? "bg-black text-white" : "hover:bg-gray-100")}>
+        {label}
+      </button>
+    );
+
+    const ToolCard = ({ tool }) => (
+      <a href={tool.url} target="_blank" rel="noreferrer"
+         className="block rounded-2xl border p-4 hover:shadow-md transition">
+        <div className="flex items-start justify-between">
+          <h3 className="text-lg font-semibold">{tool.name}</h3>
+          <span className="text-xs opacity-70">Ajouté le {tool.addedAt}</span>
+        </div>
+        <p className="mt-2 text-sm opacity-90">{tool.summary}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {tool.subjects.map(s => <Badge key={s}>{s}</Badge>)}
+          {tool.levels.map(l => <Badge key={l}>{l}</Badge>)}
+          {tool.languages.map(l => <Badge key={l}>{l}</Badge>)}
+          <Badge>{tool.pricing}</Badge>
+        </div>
+        {!!(tool.useCases?.length) && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {tool.useCases.map(u => (
+              <span key={u} className="inline-block rounded-lg bg-gray-100 px-2 py-0.5 text-xs">{u}</span>
+            ))}
+          </div>
+        )}
+        {!!(tool.badges?.length) && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {tool.badges.map(b => (<span key={b} className="text-[11px] italic opacity-80">• {b}</span>))}
+          </div>
+        )}
+      </a>
+    );
+
+    function useLocalData() {
+      const [data, setData] = useState([]);
+      useEffect(() => {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          try { setData(JSON.parse(raw)); }
+          catch { setData(DEMO_TOOLS); }
+        } else {
+          setData(DEMO_TOOLS);
+        }
+      }, []);
+      useEffect(() => {
+        if (data?.length) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      }, [data]);
+      return [data, setData];
+    }
+
+    const AddToolForm = ({ onAdd }) => {
+      const [form, setForm] = useState({
+        name:"", url:"", summary:"", subjects:[], levels:[], languages:["FR"],
+        pricing:"Freemium", useCases:[], badges:[]
+      });
+      const [open, setOpen] = useState(false);
+      const toggleArray = (key, value) => {
+        setForm(f => {
+          const has = f[key].includes(value);
+          return { ...f, [key]: has ? f[key].filter(v => v !== value) : [...f[key], value] };
+        });
+      };
+      const submit = (e) => {
+        e.preventDefault();
+        if (!form.name || !form.url) return;
+        onAdd({
+          id: `${form.name.toLowerCase().replace(/[^a-z0-9]+/g,"-")}-${Date.now()}`,
+          name: form.name, url: form.url, summary: form.summary,
+          subjects: form.subjects, levels: form.levels, languages: form.languages,
+          pricing: form.pricing, useCases: form.useCases, badges: form.badges,
+          addedAt: new Date().toISOString().slice(0,10), popularity: 0
+        });
+        setOpen(false);
+        setForm({ name:"", url:"", summary:"", subjects:[], levels:[], languages:["FR"], pricing:"Freemium", useCases:[], badges:[] });
+      };
+      return (
+        <div className="mt-4">
+          <button onClick={() => setOpen(o=>!o)} className="rounded-xl bg-black px-4 py-2 text-white">
+            {open ? "Fermer" : "Proposer un outil"}
+          </button>
+          {open && (
+            <form onSubmit={submit} className="mt-4 grid gap-3 rounded-2xl border p-4">
+              <div className="grid gap-1">
+                <label className="text-sm">Nom</label>
+                <input className="rounded-lg border px-3 py-2" value={form.name}
+                       onChange={e=>setForm({...form, name:e.target.value})} required />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm">URL</label>
+                <input type="url" className="rounded-lg border px-3 py-2" value={form.url}
+                       onChange={e=>setForm({...form, url:e.target.value})} required />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm">Résumé</label>
+                <textarea className="rounded-lg border px-3 py-2" rows="3"
+                          value={form.summary} onChange={e=>setForm({...form, summary:e.target.value})}></textarea>
+              </div>
+
+              <div className="grid gap-2 md:grid-cols-2">
+                <fieldset className="grid gap-2">
+                  <legend className="text-sm font-medium">Niveaux</legend>
+                  <div className="flex flex-wrap gap-2">
+                    {ALL_LEVELS.map(l=>(
+                      <FilterPill key={l} label={l} active={form.levels.includes(l)}
+                        onClick={()=>toggleArray("levels", l)} />
+                    ))}
+                  </div>
+                </fieldset>
+                <fieldset className="grid gap-2">
+                  <legend className="text-sm font-medium">Matières</legend>
+                  <div className="flex flex-wrap gap-2">
+                    {ALL_SUBJECTS.map(s=>(
+                      <FilterPill key={s} label={s} active={form.subjects.includes(s)}
+                        onClick={()=>toggleArray("subjects", s)} />
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
+
+              <fieldset className="grid gap-2">
+                <legend className="text-sm font-medium">Langues</legend>
+                <div className="flex flex-wrap gap-2">
+                  {ALL_LANGS.map(l=>(
+                    <FilterPill key={l} label={l} active={form.languages.includes(l)}
+                      onClick={()=>toggleArray("languages", l)} />
+                  ))}
+                </div>
+              </fieldset>
+
+              <div className="grid gap-1">
+                <label className="text-sm">Modèle économique</label>
+                <select className="rounded-lg border px-3 py-2" value={form.pricing}
+                        onChange={e=>setForm({...form, pricing:e.target.value})}>
+                  {ALL_PRICING.map(p=>(<option key={p}>{p}</option>))}
+                </select>
+              </div>
+
+              <fieldset className="grid gap-2">
+                <legend className="text-sm font-medium">Cas d'usage</legend>
+                <div className="flex flex-wrap gap-2">
+                  {ALL_USECASES.map(u=>(
+                    <FilterPill key={u} label={u} active={form.useCases.includes(u)}
+                      onClick={()=>toggleArray("useCases", u)} />
+                  ))}
+                </div>
+              </fieldset>
+
+              <div className="grid gap-1">
+                <label className="text-sm">Badges (séparés par des virgules)</label>
+                <input className="rounded-lg border px-3 py-2" placeholder="RGPD, Accessibilité, Pour enseignants…"
+                  value={form.badges.join(", ")}
+                  onChange={e=>setForm({...form, badges:e.target.value.split(",").map(s=>s.trim()).filter(Boolean)})} />
+              </div>
+
+              <div className="flex items-center justify-end gap-2">
+                <button type="button" onClick={()=>setOpen(false)} className="rounded-xl border px-4 py-2">Annuler</button>
+                <button type="submit" className="rounded-xl bg-black px-4 py-2 text-white">Ajouter</button>
+              </div>
+            </form>
+          )}
+        </div>
+      );
+    };
+
+    function AIToolsForTeachersApp() {
+      const [data, setData] = useLocalData();
+      const [q, setQ] = useState("");
+      const [level, setLevel] = useState("Tous");
+      const [subject, setSubject] = useState("Tous");
+      const [lang, setLang] = useState("Toutes");
+      const [pricing, setPricing] = useState("Tous");
+      const [usecase, setUsecase] = useState("Tous");
+      const [sort, setSort] = useState("Pertinence");
+
+      const score = (t, text) => {
+        let s = 0; if (!text) return 0;
+        const blob = `${t.name} ${t.summary} ${(t.useCases||[]).join(" ")} ${(t.subjects||[]).join(" ")}`.toLowerCase();
+        if (blob.includes(text)) s += 2;
+        if (t.name.toLowerCase().includes(text)) s += 3;
+        return s;
+      };
+
+      const filtered = useMemo(()=>{
+        const text = q.trim().toLowerCase();
+        let list = data.filter(t=>{
+          const matchesText = text
+            ? (t.name.toLowerCase().includes(text) ||
+               t.summary.toLowerCase().includes(text) ||
+               t.useCases?.some(u=>u.toLowerCase().includes(text)) ||
+               t.subjects?.some(s=>s.toLowerCase().includes(text)))
+            : true;
+          const matchesLevel   = (level   === "Tous")   ? true : t.levels?.includes(level);
+          const matchesSubject = (subject === "Tous")   ? true : t.subjects?.includes(subject);
+          const matchesLang    = (lang    === "Toutes") ? true : t.languages?.includes(lang);
+          const matchesPricing = (pricing === "Tous")   ? true : t.pricing === pricing;
+          const matchesUsecase = (usecase === "Tous")   ? true : t.useCases?.includes(usecase);
+          return matchesText && matchesLevel && matchesSubject && matchesLang && matchesPricing && matchesUsecase;
+        });
+
+        if (sort === "Popularité")      list.sort((a,b)=>(b.popularity||0)-(a.popularity||0));
+        else if (sort === "Récents")    list.sort((a,b)=>new Date(b.addedAt)-new Date(a.addedAt));
+        else if (sort === "Nom")        list.sort((a,b)=>a.name.localeCompare(b.name));
+        else                            list.sort((a,b)=>score(b, text)-score(a, text)); // Pertinence
+
+        return list;
+      }, [data,q,level,subject,lang,pricing,usecase,sort]);
+
+      const clearAll = () => {
+        setQ(""); setLevel("Tous"); setSubject("Tous"); setLang("Toutes");
+        setPricing("Tous"); setUsecase("Tous"); setSort("Pertinence");
+      };
+
+      const addTool = (t) => setData(prev => [t, ...prev]);
+
+      const exportJSON = () => {
+        const blob = new Blob([JSON.stringify(data,null,2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = "ai-tools-teachers.json"; a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      const importJSON = (file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const parsed = JSON.parse(e.target.result);
+            if (Array.isArray(parsed)) setData(parsed);
+          } catch { alert("Fichier JSON invalide"); }
+        };
+        reader.readAsText(file);
+      };
+
+      return (
+        <div className="mx-auto max-w-6xl p-4 md:p-6">
+          <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Annuaire d’outils IA pour enseignants</h1>
+              <p className="mt-1 text-sm opacity-80">Recherchez, filtrez et découvrez des outils IA utiles pour la classe. (MVP)</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={exportJSON} className="rounded-xl border px-3 py-2 text-sm">Export JSON</button>
+              <label className="rounded-xl border px-3 py-2 text-sm cursor-pointer">
+                Import JSON
+                <input type="file" accept="application/json" className="hidden"
+                  onChange={(e)=>e.target.files?.[0] && importJSON(e.target.files[0])} />
+              </label>
+            </div>
+          </header>
+
+          <section className="mt-4 grid gap-3 rounded-2xl border p-4">
+            <div className="grid gap-2 md:grid-cols-3">
+              <input className="rounded-xl border px-3 py-2"
+                     placeholder="Rechercher un outil, un usage, une matière…"
+                     value={q} onChange={e=>setQ(e.target.value)} />
+              <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                <select className="rounded-xl border px-3 py-2" value={level} onChange={e=>setLevel(e.target.value)}>
+                  <option>Tous</option>{ALL_LEVELS.map(l=><option key={l}>{l}</option>)}
+                </select>
+                <select className="rounded-xl border px-3 py-2" value={subject} onChange={e=>setSubject(e.target.value)}>
+                  <option>Tous</option>{ALL_SUBJECTS.map(s=><option key={s}>{s}</option>)}
+                </select>
+                <select className="rounded-xl border px-3 py-2" value={lang} onChange={e=>setLang(e.target.value)}>
+                  <option>Toutes</option>{ALL_LANGS.map(l=><option key={l}>{l}</option>)}
+                </select>
+                <select className="rounded-xl border px-3 py-2" value={pricing} onChange={e=>setPricing(e.target.value)}>
+                  <option>Tous</option>{ALL_PRICING.map(p=><option key={p}>{p}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid gap-2 md:grid-cols-3">
+              <select className="rounded-xl border px-3 py-2" value={usecase} onChange={e=>setUsecase(e.target.value)}>
+                <option>Tous</option>{ALL_USECASES.map(u=><option key={u}>{u}</option>)}
+              </select>
+              <select className="rounded-xl border px-3 py-2" value={sort} onChange={e=>setSort(e.target.value)}>
+                <option>Pertinence</option><option>Popularité</option><option>Récents</option><option>Nom</option>
+              </select>
+              <button onClick={clearAll} className="rounded-xl border px-3 py-2 text-sm">Réinitialiser tous les filtres</button>
+            </div>
+          </section>
+
+          <AddToolForm onAdd={addTool} />
+
+          <main className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filtered.map(t => <ToolCard key={t.id} tool={t} />)}
+            {!filtered.length && (
+              <div className="col-span-full rounded-2xl border p-6 text-center opacity-80">
+                Aucun résultat. Essayez d'élargir les filtres ou d'ajouter un nouvel outil.
+              </div>
+            )}
+          </main>
+
+          <footer className="my-10 text-center text-xs opacity-60">
+            MVP — données locales. Pour un déploiement, connecter une base (Supabase/Firebase),
+            authentification, soumissions modérées, et champs RGPD détaillés.
+          </footer>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<AIToolsForTeachersApp />);
+  </script>
+</body>
+</html>
