@@ -464,6 +464,32 @@
         </div>
       );
     }
+    
+// 🎨 Palette de couleurs carmin par catégorie
+const CAT_COLORS = {
+  general: "rose",       // carmin pour les outils généraux
+  images: "amber",       // doré pour tout ce qui est visuel/créatif
+  quiz: "red",           // rouge profond pour les quiz
+  exercises: "rose",     // carmin pour les exercices
+  assessments: "slate",  // gris bleuté pour l’évaluation
+  lessonplans: "rose",   // carmin pour les plans de cours
+};
+
+// 🛠️ Générateur de classes Tailwind dynamiques selon l'état du bouton
+const pillClasses = (color, active) =>
+  active
+    ? `bg-${color}-600 text-white shadow-sm focus:ring-${color}-300`
+    : `border border-${color}-300 text-${color}-700 hover:bg-${color}-100 focus:ring-${color}-200`;
+
+// 📍 Nouveau composant Pill qui applique la couleur dynamique
+const Pill = ({ active, color, children, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`rounded-full px-3 py-1 text-sm transition focus:outline-none focus:ring ${pillClasses(color, active)}`}
+  >
+    {children}
+  </button>
+);
 
     function App() {
       const [data, setData] = useState([]);
@@ -548,9 +574,15 @@
 
           <nav className="mt-4 flex flex-wrap items-center gap-2">
             {CATS.map(c => (
-              <Pill key={c.key} active={cat===c.key} onClick={()=>setCat(c.key)}>
-                {c.label}
-              </Pill>
+            <Pill
+  key={c.key}
+  active={cat === c.key}
+  color={CAT_COLORS[c.key] || "rose"}
+  onClick={() => setCat(c.key)}
+>
+  {c.label}
+</Pill>
+
             ))}
             <div className="ml-auto w-full md:w-auto">
               <input className="mt-2 md:mt-0 w-full rounded-xl border px-3 py-2"
