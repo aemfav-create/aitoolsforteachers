@@ -18,7 +18,7 @@
   <script type="text/babel">
     const { useEffect, useMemo, useState } = React;
 
-    // --- Catégories principales ---
+    // Catégories
     const CATS = [
       { key:"general",       label:"Général" },
       { key:"images",        label:"Images" },
@@ -28,34 +28,507 @@
       { key:"lessonplans",   label:"Plan de cours" },
     ];
 
-    // --- Données de démo (tu pourras les éditer/compléter) ---
-    const DEMO = [
-      {
-        id:"chatgpt",
-        name:"ChatGPT",
-        url:"https://chat.openai.com/",
+    // 20 outils (mix référence + nouveautés bêta)
+    const STARTER = [
+      { id:"chatgpt", name:"ChatGPT", url:"https://chat.openai.com/",
         logo:"https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg",
         categories:["general","lessonplans","exercises","assessments"],
-        summary:"Assistant polyvalent pour préparer des cours, différencier, corriger, expliquer.",
-        features:[
-          "Préparer des séquences et plans de cours",
-          "Créer des fiches/exercices adaptés au niveau",
-          "Aider à la rédaction (consignes, mails, feedback)",
-          "Générer des grilles d’évaluation"
-        ],
-        limits:[
-          "Peut inventer des infos si la consigne est floue",
-          "Nécessite une relecture pédagogique et factuelle",
-        ],
-      },
-      {
-        id:"magicschool",
-        name:"MagicSchool.ai",
-        url:"https://www.magicschool.ai/",
+        summary:"Assistant polyvalent pour préparer, différencier, corriger et expliquer.",
+        features:["Plans de cours et scénarios","Fiches/exercices adaptés","Rédaction (consignes, mails, feedback)","Idées d’activités"],
+        limits:["Peut inventer des infos → relire/valider","Dépend de la qualité du prompt"]},
+      { id:"perplexity", name:"Perplexity", url:"https://www.perplexity.ai/",
+        logo:"https://www.perplexity.ai/favicon.ico",
+        categories:["general","lessonplans"],
+        summary:"Moteur de réponses avec sources pour préparer et documenter.",
+        features:["Synthèses sourcées","Veille disciplinaire","Idées d’activités depuis des articles"],
+        limits:["Toujours vérifier les sources","Quota limité en gratuit"]},
+      { id:"copilot365", name:"Microsoft Copilot (365)", url:"https://www.microsoft.com/",
+        logo:"https://www.microsoft.com/favicon.ico",
+        categories:["general","lessonplans","exercises"],
+        summary:"Assistant intégré à Word/PowerPoint/Excel pour supports et tableaux.",
+        features:["Brouillons Word/PowerPoint","Exemples/tableaux","Synthèses de documents"],
+        limits:["Licences payantes","Qualité variable selon documents"]},
+      { id:"claude", name:"Claude", url:"https://www.anthropic.com/claude",
+        logo:"https://www.anthropic.com/favicon.ico",
+        categories:["general","lessonplans"],
+        summary:"Assistant IA axé sur des réponses détaillées et sûres.",
+        features:["Plans détaillés","Pas à pas clairs","Réécriture/clarification de consignes"],
+        limits:["Compte requis","FR très bon mais perfectible"]},
+
+      { id:"canva", name:"Canva – Magic Design", url:"https://www.canva.com/",
+        logo:"https://static.canva.com/static/images/apple-touch-icon.png",
+        categories:["images","lessonplans","exercises"],
+        summary:"Créer visuels, fiches et présentations assistées par IA.",
+        features:["Gabarits de fiches/slides","Magic Write","Exports PDF/PNG"],
+        limits:["Certaines fonctions en Pro","Propositions IA à ajuster"]},
+      { id:"adobeexpress", name:"Adobe Express (Firefly)", url:"https://www.adobe.com/express/",
+        logo:"https://www.adobe.com/favicon.ico",
+        categories:["images"],
+        summary:"Génération/édition d’images (texte→image), bannières et posters.",
+        features:["Text-to-image (Firefly)","Retouches rapides","Templates scolaires"],
+        limits:["Compte Adobe requis","Restrictions d’usage images générées"]},
+      { id:"dalle", name:"DALL·E dans ChatGPT", url:"https://chat.openai.com/",
+        logo:"https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg",
+        categories:["images"],
+        summary:"Générer des illustrations pédagogiques depuis ChatGPT.",
+        features:["Illustrations thématiques","Variations/styles","Export rapide"],
+        limits:["Interprétation parfois floue","Vérifier droits d’image"]},
+
+      { id:"quizizz", name:"Quizizz AI", url:"https://quizizz.com/",
+        logo:"https://quizizz.com/favicon.ico",
+        categories:["quiz","assessments","exercises"],
+        summary:"Créer des quiz/exos autocorrigés à partir d’un texte ou d’un thème.",
+        features:["Génération de quiz","Banque de questions","Rapports élève"],
+        limits:["Connexion élève nécessaire","Fonctions avancées payantes"]},
+      { id:"kahootai", name:"Kahoot! AI", url:"https://kahoot.com/",
+        logo:"https://kahoot.com/favicon.ico",
+        categories:["quiz","assessments"],
+        summary:"Générateur automatique de questions pour Kahoot!.",
+        features:["Questions depuis texte/thème","Jeu en direct ou devoir","Feedback immédiat"],
+        limits:["Qualité des items à vérifier","Gratuit limité"]},
+      { id:"bookwidgets", name:"BookWidgets (AI)", url:"https://www.bookwidgets.com/",
+        logo:"https://www.bookwidgets.com/favicon.ico",
+        categories:["quiz","exercises"],
+        summary:"+40 widgets (quiz, jeux, fiches) avec aide IA pour générer du contenu.",
+        features:["Quiz/activités rapides","Corrections automatiques","Export PDF + intégrations LMS"],
+        limits:["Abonnement enseignant","Interface surtout EN/NL"]},
+      { id:"conker", name:"Conker (by Mote)", url:"https://conker.ai/",
+        logo:"https://conker.ai/favicon.ico",
+        categories:["quiz","exercises"], beta:true,
+        summary:"Générer des quiz imprimables ou Google Forms.",
+        features:["Quiz multi-formats (Forms, PDF)","Import de texte","Niveaux de difficulté"],
+        limits:["Anglais prioritaire","Fonctions en évolution (BÊTA)"]},
+
+      { id:"diffit", name:"Diffit", url:"https://www.diffit.me/",
+        logo:"https://www.diffit.me/favicon.ico",
+        categories:["exercises","lessonplans","assessments"],
+        summary:"Adapter un texte à différents niveaux + générer des questions.",
+        features:["Textes différenciés","Questions de compréhension","Résumés + glossaires"],
+        limits:["Relire les questions","EN meilleur que FR (en progrès)"]},
+      { id:"worksheetai", name:"Worksheet.ai", url:"https://www.worksheet.ai/",
+        logo:"https://www.worksheet.ai/favicon.ico",
+        categories:["exercises"], beta:true,
+        summary:"Créer des fiches d’exercices prêtes à imprimer.",
+        features:["Exercices variés","Mises en page automatiques","Export PDF"],
+        limits:["Bêta : résultats inégaux","Support FR variable"]},
+      { id:"curipod", name:"Curipod", url:"https://curipod.com/",
+        logo:"https://curipod.com/favicon.ico",
+        categories:["lessonplans","exercises","assessments"],
+        summary:"Leçons interactives générées par IA (slides + activités).",
+        features:["Leçons complètes","Activités interactives","Partage aux élèves"],
+        limits:["Compte requis","Qualité à ajuster selon matière"]},
+      { id:"teachermatic", name:"Teachermatic", url:"https://www.teachermatic.com/",
+        logo:"https://www.teachermatic.com/favicon.ico",
+        categories:["exercises","lessonplans"],
+        summary:"Boîte à outils IA pour enseignants (consignes, fiches, idées).",
+        features:["Idées d’activités","Fiches et consignes","Adaptation au niveau/objectif"],
+        limits:["Abonnement pour tout utiliser","FR partiel"]},
+      { id:"edpuzzleai", name:"Edpuzzle AI", url:"https://edpuzzle.com/",
+        logo:"https://edpuzzle.com/favicon.ico",
+        categories:["exercises","assessments"], beta:true,
+        summary:"Génère des questions à partir d’une vidéo (QCM, ouvertes).",
+        features:["Extraction auto de questions","Suivi des réponses","Devoirs autocorrigés"],
+        limits:["Compte + politique données à vérifier","Fonctions IA en bêta"]},
+
+      { id:"gradescope", name:"Gradescope (AI-assisted)", url:"https://www.gradescope.com/",
+        logo:"https://www.gradescope.com/favicon.ico",
+        categories:["assessments"],
+        summary:"Aide à la correction (groupement de réponses, rubriques).",
+        features:["Gain de temps sur copies","Rubriques cohérentes","Stats par item"],
+        limits:["Plutôt secondaire II/supérieur","Compte établissement souvent requis"]},
+      { id:"formative", name:"Formative (GoFormative)", url:"https://www.formative.com/",
+        logo:"https://www.formative.com/favicon.ico",
+        categories:["assessments","exercises"],
+        summary:"Évaluations en ligne avec correction et suivi.",
+        features:["Questions variées","Suivi temps réel","Banque de contenus"],
+        limits:["Abonnement pour options avancées","FR partiel"]},
+      { id:"teachfx", name:"TeachFX", url:"https://teachfx.com/",
+        logo:"https://teachfx.com/wp-content/uploads/2022/01/cropped-TeachFX-Logo-192x192.png",
+        categories:["assessments"],
+        summary:"Analyse du temps de parole enseignant/élèves (enregistrements).",
+        features:["Indicateurs d’interaction orale","Suivi de pratiques"],
+        limits:["Anglais privilégié","Confidentialité à vérifier"]},
+
+      { id:"magicschool", name:"MagicSchool.ai", url:"https://www.magicschool.ai/",
         logo:"https://www.magicschool.ai/favicon.ico",
         categories:["lessonplans","exercises","assessments","quiz"],
-        summary:"Suite d’outils pensée pour enseignants : objectifs, consignes, quiz, rubriques.",
-        features:[
-          "Génère objectifs, activités et plans de séance",
-          "Crée quiz et questions (QCM, Vrai/Faux…)",
-          "P
+        summary:"Objectifs, consignes, quiz, rubriques d’évaluation.",
+        features:["Plans de séance","Génération de quiz","Rubriques d’évaluation"],
+        limits:["FR variable (EN meilleur)","Freemium limité"]},
+      { id:"lessonplansai", name:"LessonPlans.ai", url:"https://lessonplans.ai/",
+        logo:"https://lessonplans.ai/favicon.ico",
+        categories:["lessonplans"], beta:true,
+        summary:"Plan de cours structuré à partir d’un thème et d’un niveau.",
+        features:["Objectifs, étapes, matériel","Différenciation automatique"],
+        limits:["Bêta : résultats inégaux","FR partiel"]},
+    ];
+
+    // Stockage local
+    const STORAGE_MAIN = "iatools-v4";
+    const STORAGE_QUEUE = "iatools-v4-queue";
+
+    // Utils
+    const norm = s => (s || "").toString().trim().toLowerCase();
+    const normUrl = u => {
+      try {
+        const url = new URL(u);
+        let path = url.pathname.replace(/\/+$/,'');
+        return `${url.protocol}//${url.hostname}${path}${url.search}`;
+      } catch { return u.trim(); }
+    };
+
+    const Pill = ({active, children, onClick}) => (
+      <button onClick={onClick}
+        className={"rounded-full border px-3 py-1 text-sm transition " + (active ? "bg-black text-white" : "hover:bg-gray-100")}>
+        {children}
+      </button>
+    );
+
+    function ToolCard({ t }) {
+      return (
+        <div className="rounded-2xl border p-4 hover:shadow-sm transition">
+          <div className="flex items-center gap-3">
+            {t.logo && <img src={t.logo} alt="" className="h-10 w-10 rounded-lg object-cover border"
+                 onError={(e)=>{e.currentTarget.style.display='none';}} />}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <a href={t.url} target="_blank" rel="noreferrer"
+                   className="block truncate font-semibold hover:underline">{t.name}</a>
+                {t.beta && <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[11px] font-semibold">BÊTA</span>}
+              </div>
+              <p className="text-sm opacity-80">{t.summary}</p>
+            </div>
+          </div>
+          {(t.features?.length || t.limits?.length) && (
+            <div className="mt-3 grid gap-2 md:grid-cols-2">
+              {!!t.features?.length && <div>
+                <h4 className="text-[13px] font-semibold uppercase tracking-wide opacity-70">Ce qu’on peut faire</h4>
+                <ul className="mt-1 list-disc pl-4 text-sm">{t.features.map((f,i)=>(<li key={i}>{f}</li>))}</ul>
+              </div>}
+              {!!t.limits?.length && <div>
+                <h4 className="text-[13px] font-semibold uppercase tracking-wide opacity-70">Limites</h4>
+                <ul className="mt-1 list-disc pl-4 text-sm">{t.limits.map((f,i)=>(<li key={i}>{f}</li>))}</ul>
+              </div>}
+            </div>
+          )}
+          {!!t.categories?.length && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {t.categories.map(c => (
+                <span key={c} className="rounded-full bg-gray-100 px-2 py-0.5 text-xs">
+                  {CATS.find(x=>x.key===c)?.label || c}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function SubmissionForm({ open, onClose, onSubmit, existing }) {
+      const [name, setName] = useState("");
+      const [url, setUrl] = useState("");
+      const [logo, setLogo] = useState("");
+      const [summary, setSummary] = useState("");
+      const [features, setFeatures] = useState("");
+      const [limits, setLimits] = useState("");
+      const [beta, setBeta] = useState(false);
+      const [cats, setCats] = useState(["exercises"]);
+      const [dupMsg, setDupMsg] = useState("");
+      const [urlStatus, setUrlStatus] = useState(null); // null | 'ok' | 'bad' | 'unknown' | 'checking'
+
+      useEffect(()=>{
+        // Check duplicates when name/url changes
+        const n = norm(name);
+        const u = normUrl(url);
+        const isDup = existing.some(t => norm(t.name)===n || normUrl(t.url)===u);
+        setDupMsg(isDup ? "Cet outil existe déjà (nom ou URL déjà présents)." : "");
+      }, [name, url, existing]);
+
+      const toggleCat = (key) => {
+        setCats(prev => prev.includes(key) ? prev.filter(k=>k!==key) : [...prev, key]);
+      };
+
+      const verifyUrl = async () => {
+        setUrlStatus('checking');
+        try {
+          const res = await fetch(url, { method:'GET' , mode:'cors' });
+          if (res.ok) { setUrlStatus('ok'); return; }
+          // Retry HEAD (certains serveurs refusent GET)
+          const head = await fetch(url, { method:'HEAD', mode:'cors' });
+          if (head.ok) { setUrlStatus('ok'); return; }
+          setUrlStatus('bad');
+        } catch {
+          // CORS ou blocage : on ne peut pas savoir côté navigateur
+          setUrlStatus('unknown');
+        }
+      };
+
+      const submit = (e) => {
+        e.preventDefault();
+        const n = norm(name);
+        const u = normUrl(url);
+        const dup = existing.some(t => norm(t.name)===n || normUrl(t.url)===u);
+        if (dup) { alert("Doublon détecté : cet outil semble déjà dans la liste."); return; }
+        if (!cats.length) { alert("Choisis au moins une catégorie."); return; }
+        const item = {
+          id: `${n.replace(/[^a-z0-9]+/g,"-")}-${Date.now()}`,
+          name: name.trim(),
+          url: url.trim(),
+          logo: logo.trim() || undefined,
+          categories: cats,
+          summary: summary.trim(),
+          features: features.split("\n").map(s=>s.trim()).filter(Boolean),
+          limits: limits.split("\n").map(s=>s.trim()).filter(Boolean),
+          beta: !!beta,
+          _verified: urlStatus==='ok' ? true : (urlStatus==='bad' ? false : null),
+          _submittedAt: new Date().toISOString(),
+        };
+        onSubmit(item);
+        // reset
+        setName(""); setUrl(""); setLogo(""); setSummary(""); setFeatures(""); setLimits(""); setBeta(false); setCats(["exercises"]); setUrlStatus(null); setDupMsg("");
+        onClose();
+      };
+
+      if (!open) return null;
+      return (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Proposer un outil</h3>
+              <button onClick={onClose} className="rounded-lg border px-2 py-1 text-sm">Fermer</button>
+            </div>
+            <form onSubmit={submit} className="mt-3 grid gap-3">
+              <div className="grid gap-1">
+                <label className="text-sm">Nom de l’outil *</label>
+                <input className="rounded-lg border px-3 py-2" value={name} onChange={e=>setName(e.target.value)} required />
+                {dupMsg && <p className="text-sm text-amber-600">{dupMsg}</p>}
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm">URL officielle *</label>
+                <div className="flex gap-2">
+                  <input type="url" className="flex-1 rounded-lg border px-3 py-2" value={url} onChange={e=>setUrl(e.target.value)} required />
+                  <button type="button" onClick={verifyUrl} className="rounded-lg border px-3 py-2">Vérifier</button>
+                </div>
+                {urlStatus==='ok' && <p className="text-sm text-green-700">Lien vérifié ✅</p>}
+                {urlStatus==='bad' && <p className="text-sm text-red-700">Lien invalide ❌</p>}
+                {urlStatus==='unknown' && <p className="text-sm text-amber-700">Impossible de vérifier (CORS). Tu peux soumettre en file d’attente et valider manuellement.</p>}
+                {urlStatus==='checking' && <p className="text-sm opacity-70">Vérification…</p>}
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm">Logo (URL image / favicon)</label>
+                <input className="rounded-lg border px-3 py-2" placeholder="https://exemple.com/favicon.ico" value={logo} onChange={e=>setLogo(e.target.value)} />
+              </div>
+              <div className="grid gap-1">
+                <label className="text-sm">Résumé</label>
+                <textarea className="rounded-lg border px-3 py-2" rows="2" value={summary} onChange={e=>setSummary(e.target.value)}></textarea>
+              </div>
+              <div className="grid gap-2 md:grid-cols-2">
+                <div className="grid gap-1">
+                  <label className="text-sm">Ce qu’on peut faire (une ligne par item)</label>
+                  <textarea className="rounded-lg border px-3 py-2" rows="5" placeholder="Créer des fiches\nGénérer des quiz\nAdapter un texte…" value={features} onChange={e=>setFeatures(e.target.value)}></textarea>
+                </div>
+                <div className="grid gap-1">
+                  <label className="text-sm">Limites (une ligne par item)</label>
+                  <textarea className="rounded-lg border px-3 py-2" rows="5" placeholder="Relire avant usage\nCompte requis…" value={limits} onChange={e=>setLimits(e.target.value)}></textarea>
+                </div>
+              </div>
+              <fieldset className="grid gap-2">
+                <legend className="text-sm font-medium">Catégories *</legend>
+                <div className="flex flex-wrap gap-2">
+                  {CATS.map(c=>(
+                    <label key={c.key} className={"cursor-pointer rounded-full border px-3 py-1 text-sm " + (cats.includes(c.key) ? "bg-black text-white" : "hover:bg-gray-100")}>
+                      <input type="checkbox" className="hidden" checked={cats.includes(c.key)} onChange={()=>toggleCat(c.key)} /> {c.label}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <label className="inline-flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={beta} onChange={e=>setBeta(e.target.checked)} /> Marquer comme BÊTA
+              </label>
+
+              <div className="mt-2 flex items-center justify-end gap-2">
+                <button type="button" onClick={onClose} className="rounded-xl border px-4 py-2">Annuler</button>
+                <button type="submit" className="rounded-xl bg-black px-4 py-2 text-white">Mettre en file d’attente</button>
+              </div>
+              <p className="text-xs opacity-70">Note : la vérification technique des liens peut être limitée par la sécurité des navigateurs (CORS). En cas de doute, valide manuellement.</p>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    function AdminQueue({ queue, onApprove, onReject, onClose }) {
+      return (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="w-full max-w-3xl rounded-2xl bg-white p-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Soumissions en attente (locales)</h3>
+              <button onClick={onClose} className="rounded-lg border px-2 py-1 text-sm">Fermer</button>
+            </div>
+            {!queue.length && <p className="mt-3 text-sm opacity-70">Aucune soumission pour le moment.</p>}
+            <div className="mt-3 grid gap-3">
+              {queue.map(item=>(
+                <div key={item.id} className="rounded-xl border p-3">
+                  <div className="flex items-center gap-2">
+                    {item.logo && <img src={item.logo} className="h-8 w-8 rounded border" onError={(e)=>{e.currentTarget.style.display='none';}}/>}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <a href={item.url} target="_blank" rel="noreferrer" className="font-semibold hover:underline">{item.name}</a>
+                        {item.beta && <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[11px] font-semibold">BÊTA</span>}
+                        {item._verified===true && <span className="rounded-full bg-green-200 px-2 py-0.5 text-[11px]">Lien vérifié</span>}
+                        {item._verified===false && <span className="rounded-full bg-red-200 px-2 py-0.5 text-[11px]">Lien invalide</span>}
+                        {item._verified===null && <span className="rounded-full bg-gray-200 px-2 py-0.5 text-[11px]">Lien non vérifiable</span>}
+                      </div>
+                      <p className="text-sm opacity-80">{item.summary}</p>
+                      {!!item.categories?.length && <p className="mt-1 text-xs opacity-70">Catégories : {item.categories.join(", ")}</p>}
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center justify-end gap-2">
+                    <button onClick={()=>onReject(item.id)} className="rounded-lg border px-3 py-1 text-sm">Rejeter</button>
+                    <button onClick={()=>onApprove(item)} className="rounded-lg bg-black px-3 py-1 text-sm text-white">Approuver</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-xs opacity-70">Modération locale : visible seulement sur ce navigateur. Pour une modération partagée, on branchera plus tard une petite base.</p>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [data, setData] = useState([]);
+      const [queue, setQueue] = useState([]);
+      const [q, setQ] = useState("");
+      const [cat, setCat] = useState("exercises"); // démarre sur “Exercices”
+      const [openForm, setOpenForm] = useState(false);
+      const [openAdmin, setOpenAdmin] = useState(false);
+
+      useEffect(() => {
+        const raw = localStorage.getItem(STORAGE_MAIN);
+        const rawQ = localStorage.getItem(STORAGE_QUEUE);
+        setData(raw ? (JSON.parse(raw)||[]) : STARTER);
+        setQueue(rawQ ? (JSON.parse(rawQ)||[]) : []);
+      }, []);
+      useEffect(() => { localStorage.setItem(STORAGE_MAIN, JSON.stringify(data)); }, [data]);
+      useEffect(() => { localStorage.setItem(STORAGE_QUEUE, JSON.stringify(queue)); }, [queue]);
+
+      const list = useMemo(() => {
+        const text = q.trim().toLowerCase();
+        const filtered = data.filter(t => {
+          const inCat = t.categories?.includes(cat);
+          const inText = !text
+            || t.name.toLowerCase().includes(text)
+            || t.summary.toLowerCase().includes(text)
+            || (t.features||[]).some(x=>x.toLowerCase().includes(text));
+          return inCat && inText;
+        });
+        // tri simple : BÊTA en dernier, puis nom
+        return filtered.sort((a,b)=> (a.beta===b.beta? a.name.localeCompare(b.name) : (a.beta?1:-1)));
+      }, [data, q, cat]);
+
+      const exportJSON = () => {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = "aitools-teachers.json"; a.click();
+        URL.revokeObjectURL(url);
+      };
+      const importJSON = (file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const parsed = JSON.parse(e.target.result);
+            if (Array.isArray(parsed)) setData(parsed);
+            else alert("Le fichier doit contenir un tableau JSON.");
+          } catch { alert("Fichier JSON invalide"); }
+        };
+        reader.readAsText(file);
+      };
+
+      const handleSubmitToQueue = (item) => setQueue(prev=>[item, ...prev]);
+      const handleApprove = (item) => {
+        // re-vérifier les doublons au moment d'approuver
+        const isDup = data.some(t => norm(t.name)===norm(item.name) || normUrl(t.url)===normUrl(item.url));
+        if (isDup) { alert("Doublon : cet outil existe déjà."); return; }
+        setData(prev => [item, ...prev]);
+        setQueue(prev => prev.filter(x=>x.id!==item.id));
+      };
+      const handleReject = (id) => setQueue(prev => prev.filter(x=>x.id!==id));
+
+      return (
+        <div className="mx-auto max-w-6xl p-4 md:p-6">
+          <header className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold">Annuaire d’outils IA pour enseignants</h1>
+                <p className="text-sm opacity-80">
+                  Choisissez une catégorie, recherchez un besoin, puis ouvrez l’outil. Les fiches indiquent un <em>logo</em>,
+                  un <em>lien</em>, <em>ce qu’on peut faire</em>, les <em>limites</em>. Les nouveautés sont marquées <strong>BÊTA</strong>.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={exportJSON} className="rounded-xl border px-3 py-2 text-sm">Export JSON</button>
+                <label className="rounded-xl border px-3 py-2 text-sm cursor-pointer">
+                  Import JSON
+                  <input type="file" accept="application/json" className="hidden"
+                         onChange={(e)=>e.target.files?.[0] && importJSON(e.target.files[0])} />
+                </label>
+              </div>
+            </div>
+          </header>
+
+          <nav className="mt-4 flex flex-wrap items-center gap-2">
+            {CATS.map(c => (
+              <Pill key={c.key} active={cat===c.key} onClick={()=>setCat(c.key)}>
+                {c.label}
+              </Pill>
+            ))}
+            <div className="ml-auto w-full md:w-auto">
+              <input className="mt-2 md:mt-0 w-full rounded-xl border px-3 py-2"
+                     placeholder="Rechercher un outil ou une fonctionnalité…"
+                     value={q} onChange={e=>setQ(e.target.value)} />
+            </div>
+          </nav>
+
+          <div className="mt-3 flex items-center gap-2">
+            <button onClick={()=>setOpenForm(true)} className="rounded-xl bg-black px-4 py-2 text-white">Proposer un outil</button>
+            <button onClick={()=>setOpenAdmin(true)} className="rounded-xl border px-4 py-2">Soumissions en attente ({queue.length})</button>
+          </div>
+
+          <main className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {list.map(t => (<ToolCard key={t.id} t={t} />))}
+            {!list.length && (
+              <div className="col-span-full rounded-2xl border p-6 text-center opacity-70">
+                Aucun résultat dans cette catégorie. Essayez une autre requête.
+              </div>
+            )}
+          </main>
+
+          <footer className="my-10 text-center text-xs opacity-60">
+            Version statique (GitHub Pages). Vérifiez toujours la conformité (données, droits d’image) avant usage en classe.
+            Pour modération partagée et vérification serveur : à faire plus tard via une petite base (Supabase/Firebase).
+          </footer>
+
+          <SubmissionForm
+            open={openForm}
+            onClose={()=>setOpenForm(false)}
+            onSubmit={handleSubmitToQueue}
+            existing={data}
+          />
+          {openAdmin && (
+            <AdminQueue
+              queue={queue}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              onClose={()=>setOpenAdmin(false)}
+            />
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
