@@ -4,9 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Annuaire d’outils IA pour enseignants</title>
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- React + ReactDOM UMD -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel pour interpréter le JSX dans le navigateur -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="bg-white text-slate-900">
@@ -15,7 +18,7 @@
   <script type="text/babel">
     const { useEffect, useMemo, useState } = React;
 
-    // Catégories
+    // --- Catégories ---
     const CATS = [
       { key:"general",       label:"Général" },
       { key:"images",        label:"Images" },
@@ -25,9 +28,8 @@
       { key:"lessonplans",   label:"Plan de cours" },
     ];
 
-    // Base d'outils (20 d'origine + 5 images ajoutées)
+    // --- Données (20 d’origine + 5 image-makers ajoutés) ---
     const STARTER = [
-      // --------- Général / Plans / Exercices / Éval ----------
       { id:"chatgpt", name:"ChatGPT", url:"https://chat.openai.com/",
         logo:"https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg",
         categories:["general","lessonplans","exercises","assessments"],
@@ -53,7 +55,7 @@
         features:["Plans détaillés","Pas à pas clairs","Réécriture/clarification de consignes"],
         limits:["Compte requis","FR très bon mais perfectible"]},
 
-      // -------------------- Images --------------------
+      /* IMAGES */
       { id:"canva", name:"Canva – Magic Design", url:"https://www.canva.com/",
         logo:"https://static.canva.com/static/images/apple-touch-icon.png",
         categories:["images","lessonplans","exercises"],
@@ -72,12 +74,10 @@
         summary:"Générer des illustrations pédagogiques depuis ChatGPT.",
         features:["Illustrations thématiques","Variations/styles","Export rapide"],
         limits:["Interprétation parfois floue","Vérifier droits d’image"]},
-
-      /* *** NOUVEAUX OUTILS IMAGES *** */
       { id:"midjourney", name:"Midjourney", url:"https://www.midjourney.com/",
         logo:"https://www.midjourney.com/apple-touch-icon.png",
         categories:["images"],
-        summary:"Générateur d’images haut de gamme (via Discord). Idéal pour affiches, couvertures, illustrations pro.",
+        summary:"Générateur d’images haut de gamme (via Discord). Idéal pour affiches et illustrations pro.",
         features:["Qualité artistique élevée","Compréhension fine des prompts","Styles variés"],
         limits:["Nécessite Discord","Gratuit très limité"]},
       { id:"leonardo", name:"Leonardo.ai", url:"https://leonardo.ai/",
@@ -90,14 +90,14 @@
         logo:"https://www.google.com/favicon.ico",
         categories:["images"], beta:true,
         summary:"Générateur d’images de Google (accès Labs). Très bon réalisme et cohérence.",
-        features:["Qualité élevée","Styles précis","Intégration écosystème Google (progressive)"],
+        features:["Qualité élevée","Styles précis","Intégration progressive Google"],
         limits:["Accès souvent restreint (BÊTA)","Compte Google requis"]},
       { id:"playgroundai", name:"Playground.ai", url:"https://playgroundai.com/",
         logo:"https://playgroundai.com/favicon.ico",
         categories:["images"],
         summary:"Génération et retouches simples. Idéal pour créer des images rapides pour des fiches.",
         features:["Interface simple","Retouches intégrées","Plan gratuit généreux"],
-        limits:["Moins puissant que Midjourney/Leonardo","Qualité variable selon prompts"]},
+        limits:["Moins puissant que Midjourney/Leonardo","Qualité variable"]},
       { id:"ideogram", name:"Ideogram.ai", url:"https://ideogram.ai/",
         logo:"https://ideogram.ai/favicon.ico",
         categories:["images"], beta:true,
@@ -105,7 +105,7 @@
         features:["Texte net dans l’image","Templates d’affiches","Partage facile"],
         limits:["Encore en BÊTA","Résultats inégaux selon langues"]},
 
-      // -------------------- Quiz --------------------
+      /* QUIZ */
       { id:"quizizz", name:"Quizizz AI", url:"https://quizizz.com/",
         logo:"https://quizizz.com/favicon.ico",
         categories:["quiz","assessments","exercises"],
@@ -131,7 +131,7 @@
         features:["Quiz multi-formats (Forms, PDF)","Import de texte","Niveaux de difficulté"],
         limits:["Anglais prioritaire","Fonctions en évolution (BÊTA)"]},
 
-      // -------------------- Exercices --------------------
+      /* EXERCICES */
       { id:"diffit", name:"Diffit", url:"https://www.diffit.me/",
         logo:"https://www.diffit.me/favicon.ico",
         categories:["exercises","lessonplans","assessments"],
@@ -163,7 +163,7 @@
         features:["Extraction auto de questions","Suivi des réponses","Devoirs autocorrigés"],
         limits:["Compte + politique données à vérifier","Fonctions IA en bêta"]},
 
-      // -------------------- Évaluations --------------------
+      /* ÉVALUATIONS */
       { id:"gradescope", name:"Gradescope (AI-assisted)", url:"https://www.gradescope.com/",
         logo:"https://www.gradescope.com/favicon.ico",
         categories:["assessments"],
@@ -183,7 +183,7 @@
         features:["Indicateurs d’interaction orale","Suivi de pratiques"],
         limits:["Anglais privilégié","Confidentialité à vérifier"]},
 
-      // -------------------- Plans de cours --------------------
+      /* PLANS DE COURS */
       { id:"magicschool", name:"MagicSchool.ai", url:"https://www.magicschool.ai/",
         logo:"https://www.magicschool.ai/favicon.ico",
         categories:["lessonplans","exercises","assessments","quiz"],
@@ -198,18 +198,18 @@
         limits:["Bêta : résultats inégaux","FR partiel"]},
     ];
 
-    // Stockage local
+    // --- LocalStorage keys ---
     const STORAGE_MAIN = "iatools-v5";
     const STORAGE_QUEUE = "iatools-v5-queue";
 
-    // Utils
+    // --- Utils ---
     const norm = s => (s || "").toString().trim().toLowerCase();
     const normUrl = u => {
       try {
         const url = new URL(u);
-        let path = url.pathname.replace(/\/+$/,'');
+        const path = url.pathname.replace(/\/+$/,'');
         return `${url.protocol}//${url.hostname}${path}${url.search}`;
-      } catch { return u.trim(); }
+      } catch { return (u || "").trim(); }
     };
 
     const Pill = ({active, children, onClick}) => (
@@ -250,18 +250,24 @@
               <p className="text-sm opacity-80">{t.summary}</p>
             </div>
           </div>
+
           {(t.features?.length || t.limits?.length) && (
             <div className="mt-3 grid gap-2 md:grid-cols-2">
-              {!!t.features?.length && <div>
-                <h4 className="text-[13px] font-semibold uppercase tracking-wide opacity-70">Ce qu’on peut faire</h4>
-                <ul className="mt-1 list-disc pl-4 text-sm">{t.features.map((f,i)=>(<li key={i}>{f}</li>))}</ul>
-              </div>}
-              {!!t.limits?.length && <div>
-                <h4 className="text-[13px] font-semibold uppercase tracking-wide opacity-70">Limites</h4>
-                <ul className="mt-1 list-disc pl-4 text-sm">{t.limits.map((f,i)=>(<li key={i}>{f}</li>))}</ul>
-              </div>}
+              {!!t.features?.length && (
+                <div>
+                  <h4 className="text-[13px] font-semibold uppercase tracking-wide opacity-70">Ce qu’on peut faire</h4>
+                  <ul className="mt-1 list-disc pl-4 text-sm">{t.features.map((f,i)=>(<li key={i}>{f}</li>))}</ul>
+                </div>
+              )}
+              {!!t.limits?.length && (
+                <div>
+                  <h4 className="text-[13px] font-semibold uppercase tracking-wide opacity-70">Limites</h4>
+                  <ul className="mt-1 list-disc pl-4 text-sm">{t.limits.map((f,i)=>(<li key={i}>{f}</li>))}</ul>
+                </div>
+              )}
             </div>
           )}
+
           {!!t.categories?.length && (
             <div className="mt-3 flex flex-wrap gap-2">
               {t.categories.map(c => (
@@ -271,6 +277,7 @@
               ))}
             </div>
           )}
+
           <div className="mt-3">
             <button className="rounded-lg border px-3 py-1 text-xs"
                     onClick={()=>navigator.clipboard?.writeText(t.url)}>Copier le lien</button>
@@ -305,7 +312,7 @@
       const verifyUrl = async () => {
         setUrlStatus('checking');
         try {
-          const res = await fetch(url, { method:'GET' , mode:'cors' });
+          const res = await fetch(url, { method:'GET', mode:'cors' });
           if (res.ok) { setUrlStatus('ok'); return; }
           const head = await fetch(url, { method:'HEAD', mode:'cors' });
           if (head.ok) { setUrlStatus('ok'); return; }
@@ -336,7 +343,8 @@
           _submittedAt: new Date().toISOString(),
         };
         onSubmit(item);
-        setName(""); setUrl(""); setLogo(""); setSummary(""); setFeatures(""); setLimits(""); setBeta(false); setCats(["exercises"]); setUrlStatus(null); setDupMsg("");
+        setName(""); setUrl(""); setLogo(""); setSummary(""); setFeatures(""); setLimits("");
+        setBeta(false); setCats(["exercises"]); setUrlStatus(null); setDupMsg("");
         onClose();
       };
 
@@ -348,12 +356,14 @@
               <h3 className="text-lg font-semibold">Proposer un outil</h3>
               <button onClick={onClose} className="rounded-lg border px-2 py-1 text-sm">Fermer</button>
             </div>
+
             <form onSubmit={submit} className="mt-3 grid gap-3">
               <div className="grid gap-1">
                 <label className="text-sm">Nom de l’outil *</label>
                 <input className="rounded-lg border px-3 py-2" value={name} onChange={e=>setName(e.target.value)} required />
                 {dupMsg && <p className="text-sm text-amber-600">{dupMsg}</p>}
               </div>
+
               <div className="grid gap-1">
                 <label className="text-sm">URL officielle *</label>
                 <div className="flex gap-2">
@@ -362,17 +372,20 @@
                 </div>
                 {urlStatus==='ok' && <p className="text-sm text-green-700">Lien vérifié ✅</p>}
                 {urlStatus==='bad' && <p className="text-sm text-red-700">Lien invalide ❌</p>}
-                {urlStatus==='unknown' && <p className="text-sm text-amber-700">Impossible de vérifier (CORS). Tu peux soumettre en file d’attente et valider manuellement.</p>}
+                {urlStatus==='unknown' && <p className="text-sm text-amber-700">Impossible de vérifier (CORS). Valide manuellement si besoin.</p>}
                 {urlStatus==='checking' && <p className="text-sm opacity-70">Vérification…</p>}
               </div>
+
               <div className="grid gap-1">
                 <label className="text-sm">Logo (URL image / favicon)</label>
                 <input className="rounded-lg border px-3 py-2" placeholder="https://exemple.com/favicon.ico" value={logo} onChange={e=>setLogo(e.target.value)} />
               </div>
+
               <div className="grid gap-1">
                 <label className="text-sm">Résumé</label>
                 <textarea className="rounded-lg border px-3 py-2" rows="2" value={summary} onChange={e=>setSummary(e.target.value)}></textarea>
               </div>
+
               <div className="grid gap-2 md:grid-cols-2">
                 <div className="grid gap-1">
                   <label className="text-sm">Ce qu’on peut faire (une ligne par item)</label>
@@ -383,6 +396,7 @@
                   <textarea className="rounded-lg border px-3 py-2" rows="5" placeholder="Relire avant usage\nCompte requis…" value={limits} onChange={e=>setLimits(e.target.value)}></textarea>
                 </div>
               </div>
+
               <fieldset className="grid gap-2">
                 <legend className="text-sm font-medium">Catégories *</legend>
                 <div className="flex flex-wrap gap-2">
@@ -393,6 +407,7 @@
                   ))}
                 </div>
               </fieldset>
+
               <label className="inline-flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={beta} onChange={e=>setBeta(e.target.checked)} /> Marquer comme BÊTA
               </label>
@@ -401,7 +416,7 @@
                 <button type="button" onClick={onClose} className="rounded-xl border px-4 py-2">Annuler</button>
                 <button type="submit" className="rounded-xl bg-black px-4 py-2 text-white">Mettre en file d’attente</button>
               </div>
-              <p className="text-xs opacity-70">Note : la vérification technique des liens peut être limitée par la sécurité des navigateurs (CORS). En cas de doute, valide manuellement.</p>
+              <p className="text-xs opacity-70">Note : certaines vérifications de liens sont limitées par la sécurité des navigateurs (CORS).</p>
             </form>
           </div>
         </div>
@@ -416,7 +431,9 @@
               <h3 className="text-lg font-semibold">Soumissions en attente (locales)</h3>
               <button onClick={onClose} className="rounded-lg border px-2 py-1 text-sm">Fermer</button>
             </div>
+
             {!queue.length && <p className="mt-3 text-sm opacity-70">Aucune soumission pour le moment.</p>}
+
             <div className="mt-3 grid gap-3">
               {queue.map(item=>(
                 <div key={item.id} className="rounded-xl border p-3">
@@ -441,7 +458,8 @@
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-xs opacity-70">Modération locale : visible seulement sur ce navigateur. Pour une modération partagée, on branchera plus tard une base.</p>
+
+            <p className="mt-3 text-xs opacity-70">Modération locale : visible seulement sur ce navigateur. Pour une modération partagée, on ajoutera une base plus tard.</p>
           </div>
         </div>
       );
@@ -451,7 +469,7 @@
       const [data, setData] = useState([]);
       const [queue, setQueue] = useState([]);
       const [q, setQ] = useState("");
-      const [cat, setCat] = useState("exercises"); // démarre sur “Exercices”
+      const [cat, setCat] = useState("exercises"); // démarrage sur “Exercices”
       const [openForm, setOpenForm] = useState(false);
       const [openAdmin, setOpenAdmin] = useState(false);
 
@@ -474,6 +492,7 @@
             || (t.features||[]).some(x=>x.toLowerCase().includes(text));
           return inCat && inText;
         });
+        // tri simple : BÊTA en dernier, puis nom
         return filtered.sort((a,b)=> (a.beta===b.beta? a.name.localeCompare(b.name) : (a.beta?1:-1)));
       }, [data, q, cat]);
 
@@ -512,8 +531,8 @@
               <div>
                 <h1 className="text-2xl font-bold">Annuaire d’outils IA pour enseignants</h1>
                 <p className="text-sm opacity-80">
-                  Choisissez une catégorie, recherchez un besoin, puis ouvrez l’outil. Les fiches indiquent un <em>logo</em>,
-                  un <em>lien</em>, <em>ce qu’on peut faire</em>, les <em>limites</em>. Les nouveautés sont marquées <strong>BÊTA</strong>.
+                  Choisissez une catégorie, recherchez un besoin, puis ouvrez l’outil. Les fiches indiquent un <em>logo</em>, un <em>lien</em>,
+                  <em> ce qu’on peut faire</em>, les <em>limites</em>. Les nouveautés sont marquées <strong>BÊTA</strong>.
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -556,7 +575,6 @@
 
           <footer className="my-10 text-center text-xs opacity-60">
             Version statique (GitHub Pages). Vérifiez toujours la conformité (données, droits d’image) avant usage en classe.
-            Pour modération partagée et vérification serveur : à prévoir plus tard (base + auth).
           </footer>
 
           <SubmissionForm
