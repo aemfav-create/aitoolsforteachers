@@ -183,13 +183,42 @@
         {children}
       </button>
     );
+<script type="text/babel">
+  // ...
+  const getLogo = (t) => {
+    if (t.logo) return t.logo;
+    try {
+      const u = new URL(t.url);
+      return `${u.protocol}//${u.hostname}/favicon.ico`;
+    } catch {
+      return null;
+    }
+  };
+</script>
 
     function ToolCard({ t }) {
       return (
         <div className="rounded-2xl border p-4 hover:shadow-sm transition">
           <div className="flex items-center gap-3">
-            {t.logo && <img src={t.logo} alt="" className="h-10 w-10 rounded-lg object-cover border"
-                 onError={(e)=>{e.currentTarget.style.display='none';}} />}
+            {t.logo && const src = getLogo(t);
+<div className="flex items-center gap-3">
+  {src ? (
+    <img
+      src={src}
+      alt=""
+      className="h-10 w-10 rounded-lg object-cover border"
+      onError={(e)=>{ e.currentTarget.style.display='none'; e.currentTarget.nextSibling.style.display='flex'; }}
+    />
+  ) : null}
+  <div
+    style={{display: src ? 'none' : 'flex'}}
+    className="h-10 w-10 items-center justify-center rounded-lg border bg-gray-50 text-xs font-semibold"
+  >
+    {(t.name || '?').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()}
+  </div>
+  {/* ... le reste de l’en-tête (nom + résumé) */}
+</div>
+}
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <a href={t.url} target="_blank" rel="noreferrer"
